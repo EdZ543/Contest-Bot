@@ -29,10 +29,15 @@ async def send_contest(contest, channel):
 
 @tasks.loop(seconds=interval)
 async def get_new_contests():
-	for server in db.values():
+	for server_id in db.keys():
+		server = db[server_id]
+		channel = bot.get_channel(server['channel_id'])
+		if channel == None:
+			del db[server_id]
+			continue
+
 		response = requests.get(api_url)
 		response_data = response.json()['data']['objects']
-		channel = bot.get_channel(server['channel_id'])
 
 		for contest in response_data:
 			contest_date = datetime.datetime.strptime(contest['end_time'], '%Y-%m-%dT%H:%M:%S%z')
